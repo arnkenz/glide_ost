@@ -8,39 +8,52 @@ class GildedRose {
 	}
 
 	public void updateQuality() {
-		for (int i = 0; i < items.length; i++) {
-			Item item = items[i];
-			if (isBackstage(item) || isAgedBrie(item)) {
-				if (isUnderHighestQuality(item)) {
-					increaseQuality(item);
-					if (isBackstage(item)) {
-						if (item.sellIn < 11) {
-								increaseQuality(item);						
-						}
-						if (item.sellIn < 6) {
-								increaseQuality(item);
-						}
-					}
-				}
-			
-			} else {
-				if (isPositiveQuality(item)) {
-					if (!isLegendary(item)) {
-						decreaseQuality(item);
-					}
-				}
+		for (Item item : items) {
+			updateQuality(item);
+		}
+	}
+
+	private void updateQuality(Item item) {
+		if (isBackstage(item)) {
+			increaseQuality(item);
+			if (item.sellIn < 11) {
+				increaseQuality(item);
+			}
+			if (item.sellIn < 6) {
+				increaseQuality(item);
 			}
 
-			if (!isLegendary(item)) {
-				decreaseSellIn(item);
-			}
-
+		} else if (isAgedBrie(item)) {
+			increaseQuality(item);
+		} else if (isLegendary(item)) {
+		} else {
+			decreaseQuality(item);
+		}
+		if (!isLegendary(item)) {
+			decreaseSellIn(item);
+		}
+		if (isExpired(item)) {
 			handleDatePassed(item);
 		}
 	}
 
+	private void handleDatePassed(Item item) {
+		if (isAgedBrie(item)) {
+			increaseQuality(item);
+		} else if (isBackstage(item)) {
+			item.quality = 0;
+		} else if (isLegendary(item)) {
+			return;
+		} else {
+			decreaseQuality(item);
+		}
+	}
+	
 	private int decreaseQuality(Item item) {
-		return item.quality = item.quality - 1;
+		if (isPositiveQuality(item)) {
+			return item.quality = item.quality - 1;
+		}
+		return item.quality;
 	}
 
 	private int decreaseSellIn(Item item) {
@@ -48,36 +61,23 @@ class GildedRose {
 	}
 
 	private boolean isLegendary(Item item) {
-		return item.name.equals("Sulfuras, Hand of Ragnaros") || item.name.equals("Sulfuras");
+		return item.name.equals("Sulfuras");
 	}
 
 	private int increaseQuality(Item item) {
-		return item.quality = item.quality + 1;
+		if (isUnderHighestQuality(item)) {
+			return item.quality = item.quality + 1;
+		}
+		return item.quality;
 	}
 
 	public boolean isBackstage(Item item) {
 		return item.name.equals("Backstage passes to a TAFKAL80ETC concert");
 	}
 
-	private void handleDatePassed(Item item) {
-		if (item.sellIn < 0) {
-			if (isAgedBrie(item)) {
-				if (isUnderHighestQuality(item)) {
-					increaseQuality(item);
-				}
-			} else {
-			 if (isBackstage(item)) {
-					item.quality = 0;
-				}
-			 else {
-					if (isPositiveQuality(item)) {
-						if (!isLegendary(item)) {
-							decreaseQuality(item);
-						}
-					}
-				}
-			}
-		}
+
+	private boolean isExpired(Item item) {
+		return item.sellIn < 0;
 	}
 
 	private boolean isPositiveQuality(Item item) {
